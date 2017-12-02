@@ -32,9 +32,9 @@ y_test = pd.get_dummies(test_data.Activity)
 # find principal components
 pca = decomposition.PCA(n_components=40)
 x_train_pca = pca.fit_transform(x_train)
-print pca.explained_variance_ratio_  # how much info is compressed into the first few components
+print(pca.explained_variance_ratio_)  # how much info is compressed into the first few components
 
-print pca.explained_variance_ratio_.sum()  # cumulative variance(figure out how many components to keep...atleast 70% keep)
+print(pca.explained_variance_ratio_.sum())  # cumulative variance(figure out how many components to keep...atleast 70% keep)
 # value = 1 means 100  of dataset's info is captured the components shown that were returned(we dont want that as it contain noise, redundancy and outliers)
 
 feature_names = x_train.head(0)
@@ -49,7 +49,7 @@ plt.show()
 # finding if any missing values
 missing = x_train.isnull().sum()
 missing = missing[missing > 0]
-print missing
+print(missing)
 
 # Train Using Random Forest with 20 Trees
 
