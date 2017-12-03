@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -7,8 +8,14 @@ from sklearn import datasets
 from sklearn.metrics import confusion_matrix as cf
 from sklearn import svm
 
-def classify(train, train_labels, test, test_labels, method, SVMtype):
-    clf = svm.SVC(decision_function_shape=SVMtype)
+
+def classify(train, train_labels, test, test_labels, method):
+    """
+    train - Training data
+    train_labels - Labels corresponding to training data points
+    test - Test data
+    """
+    clf = svm.LinearSVC()
     clf.fit(train,train_labels)
     print("Accuracy in ", method, " = ", clf.score(test,test_labels))
     return clf
@@ -23,10 +30,16 @@ def plot_confusion(classifier, test_pts, test_labels):
     pred_label = classifier.predict(test_pts)
     #print(true_label)
     result = cf(test_labels, pred_label, labels=classes)
+    res_nor = np.ndarray((6,6),dtype=float)
+    for i in range(0,6):
+        s = result[i].sum()
+        for j in range(0,6):
+            res_nor[i][j] = float(result[i][j]/s)
     print(result)
+    print(res_nor)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.matshow(result)
+    cax = ax.matshow(res_nor)
     #plt.matshow(result)
     fig.colorbar(cax)
     ax.set_xticklabels([''] + classes)
@@ -47,14 +60,15 @@ test_labels = test_data['Activity']
 
 
 # Classifying and plotting after applying PCA
-#pca = PCA(n_components=200)
-#train_pca = pca.fit_transform(train_pts)
+pca = PCA(n_components=200)
+train_pca = pca.fit_transform(train_pts,y=train_labels)
 #print(pca.explained_variance_ratio_)
-#test_pca = pca.fit_transform(test_pts)
+test_pca = pca.transform(test_pts)
 #print(pca.explained_variance_ratio_)
-#ovoclf = classify(train_pca, train_labels, test_pca, test_labels, "PCA(ovr)", 'ovo')
-#plot_confusion(ovoclf, test_pca, test_labels)
+clf = classify(train_pca, train_labels, test_pca, test_labels, "PCA")
+plot_confusion(clf, test_pca, test_labels)
+
 
 # Classifying and plotting Actual dataset
-ovoclf = classify(train_pts, train_labels, test_pts, test_labels, "Normal", 'ovr')
-plot_confusion(ovoclf, test_pts, test_labels)
+#ovoclf = classify(train_pts, train_labels, test_pts, test_labels, "Normal", 'ovr')
+#plot_confusion(ovoclf, test_pts, test_labels)
