@@ -1,55 +1,86 @@
 import numpy as np
 import pandas as pd
-
 import matplotlib.pyplot as plt
-import pylab as plt
 import seaborn as sb
-from pylab import rcParams
 
-import sklearn
-from sklearn import decomposition
 from sklearn.decomposition import PCA
-from sklearn import datasets
+from sklearn import metrics
 from sklearn.metrics import confusion_matrix as cf
+from sklearn.cross_validation import cross_val_score
+
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
 
-# Loading the training and testing data sets
+def classify(train, train_labels, test, test_labels, method):
+    k_range = list(range(5, 12))
+    k_scores = []
+    for k in k_range:
+        clf = KNeighborsClassifier(n_neighbors=k)
+        clf.fit(train, train_labels)
+        # scores = clf.score(train, train_labels)
+        # k_scores.append(scores)
+        scores = cross_val_score(clf, test, test_labels, cv=10, scoring='accuracy')
+        k_scores.append(scores.mean())
+    return k_scores
+
+
+def plot_confusion(classifier, test_pts, test_labels):
+    classes = ['STANDING',
+               'SITTING',
+               'LAYING',
+               'WALKING',
+               'WALKING_DOWNSTAIRS',
+               'WALKING_UPSTAIRS']
+    pred_label = classifier.predict(test_pts)
+    # print(true_label)
+    result = cf(test_labels, pred_label, labels=classes)
+    res_nor = np.ndarray((6, 6), dtype=float)
+    for i in range(0, 6):
+        s = result[i].sum()
+        for j in range(0, 6):
+            res_nor[i][j] = float(result[i][j] / s)
+    print(result)
+    print(res_nor)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(res_nor)
+    # plt.matshow(result)
+    fig.colorbar(cax)
+    ax.set_xticklabels([''] + classes)
+    ax.set_yticklabels([''] + classes)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.legend(loc='best')
+    plt.show()
+
+
+# Partitioning data to input and target variable
 train_data = pd.read_csv('datasets/train.csv')
 test_data = pd.read_csv('datasets/test.csv')
 
-# print test_data.head(2)
+train_pts = train_data.drop('Activity', axis=1)
+train_labels = train_data['Activity']
 
-# Partitioning data to input and target variable
+test_pts = test_data.drop('Activity', axis=1)
+test_labels = test_data['Activity']
 
-x_train = train_data.drop('Activity', axis=1)
 
-y_train = pd.get_dummies(train_data.Activity)  # create dummies from a categorical column of a dataframe
+# Classifying and plotting after applying PCA
+pca = PCA(n_components=200)
+train_pca = pca.fit_transform(train_pts, y=train_labels)
+# print(pca.explained_variance_ratio_)
+test_pca = pca.transform(test_pts)
+# print(pca.explained_variance_ratio_)
 
-x_test = test_data.drop('Activity', axis=1)
-y_test = pd.get_dummies(test_data.Activity)
-
-# find principal components
-pca = decomposition.PCA(n_components=40)
-x_train_pca = pca.fit_transform(x_train)
-print(pca.explained_variance_ratio_)  # how much info is compressed into the first few components
-
-print(pca.explained_variance_ratio_.sum())  # cumulative variance(figure out how many components to keep...atleast 70% keep)
-# value = 1 means 100  of dataset's info is captured the components shown that were returned(we dont want that as it contain noise, redundancy and outliers)
-
-feature_names = x_train.head(0)
-x_train = pca.fit(x_train).transform(x_train)
-
-comps = pd.DataFrame(pca.components_)
-
-sb.heatmap(comps)
+k_range = list(range(1, 31))
+k_scores = classify(train_pca, train_labels, test_pca, test_labels, "PCA")
+print(k_scores)
+plt.plot(k_range, k_scores)
+plt.xlabel('Value of K for KNN')
+plt.ylabel('KNN Accuracy')
 plt.show()
 
-
-# finding if any missing values
-missing = x_train.isnull().sum()
-missing = missing[missing > 0]
-print(missing)
 
 # Train Using Random Forest with 20 Trees
 
