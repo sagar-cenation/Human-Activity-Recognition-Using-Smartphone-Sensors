@@ -60,15 +60,32 @@ test_labels = test_data['Activity']
 
 
 # Classifying and plotting after applying PCA
-pca = PCA(n_components=200)
+pca = PCA(n_components=50)
 train_pca = pca.fit_transform(train_pts,y=train_labels)
-#print(pca.explained_variance_ratio_)
+print(pca.explained_variance_ratio_.sum())
 test_pca = pca.transform(test_pts)
 #print(pca.explained_variance_ratio_)
 clf = classify(train_pca, train_labels, test_pca, test_labels, "PCA")
-plot_confusion(clf, test_pca, test_labels)
-
-
+# plot_confusion(clf, test_pca, test_labels)
+accuTrain = []
+accuTest = []
+for i in range(1,100):
+    pca = PCA(n_components=i)
+    train_pca = pca.fit_transform(train_pts,y=train_labels)
+    # print(pca.explained_variance_ratio_.sum())
+    test_pca = pca.transform(test_pts)
+    clf = svm.LinearSVC()
+    clf.fit(train_pca,train_labels)
+    accuTest.append(clf.score(test_pca,test_labels))
+    accuTrain.append(clf.score(train_pca,train_labels))
+comp = [i for i in range(1,100)]
+plt.plot(comp,accuTrain,label="Train Accuracy")
+plt.plot(comp,accuTest,label="Test Accuracy")
+plt.xlabel("No. of Components")
+plt.ylabel("Accuracy")
+plt.title("Accuracy V/S Components")
+plt.legend(loc='best')
+plt.show()
 # Classifying and plotting Actual dataset
 #ovoclf = classify(train_pts, train_labels, test_pts, test_labels, "Normal", 'ovr')
 #plot_confusion(ovoclf, test_pts, test_labels)
