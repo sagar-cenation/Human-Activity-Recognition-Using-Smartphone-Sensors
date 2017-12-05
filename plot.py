@@ -22,8 +22,9 @@ def plotGraph3D(train,fx,fy,fz):
 	ax.set_xlabel(fx)
 	ax.set_ylabel(fy)
 	ax.set_zlabel(fz)
+	ax.legend()
 	plt.show()
 
-train = pd.read_csv('datasets/train.csv')
+# train = pd.read_csv('datasets/train.csv')
 
-plotGraph3D(train,'tBodyAcc-mean()-X','tBodyAcc-mad()-X','tBodyAcc-arCoeff()-X,1')
+# plotGraph3D(train,'tBodyAcc-mean()-X','tBodyAcc-mad()-X','tBodyAcc-arCoeff()-X,1')
