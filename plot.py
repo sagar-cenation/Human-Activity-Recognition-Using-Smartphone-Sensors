@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 def plotGraph(train,fx,fy):
 	div = train.groupby('Activity')
@@ -12,6 +13,18 @@ def plotGraph(train,fx,fy):
 	plt.legend(loc='best')
 	plt.show()
 
-train = pd.read_csv('train.csv')
+def plotGraph3D(train,fx,fy,fz):
+	div = train.groupby('Activity')
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection="3d")
+	for name,group in div:
+ 		ax.scatter(group[fx],group[fy],group[fz],'.',label=name)
+	ax.set_xlabel(fx)
+	ax.set_ylabel(fy)
+	ax.set_zlabel(fz)
+	ax.legend()
+	plt.show()
 
-plotGraph(train,'tGravityAcc-mean()-X','tGravityAcc-max()-X')
+# train = pd.read_csv('datasets/train.csv')
+
+# plotGraph3D(train,'tBodyAcc-mean()-X','tBodyAcc-mad()-X','tBodyAcc-arCoeff()-X,1')
