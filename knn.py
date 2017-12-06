@@ -11,56 +11,7 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-
-def classify(train, train_labels, test, test_labels, method):
-    prop = {
-        'n_neighbors': None,
-        'weights': None,
-        'algorithm': None,
-        'p': None
-    }
-
-    k_range = list(range(5, 12))
-    k_scores = []
-    for n_neighbors in k_range:
-        for weights in ('uniform','distance',)
-        clf = KNeighborsClassifier(n_neighbors=k)
-        clf.fit(train, train_labels)
-        # scores = clf.score(train, train_labels)
-        # k_scores.append(scores)
-        scores = cross_val_score(clf, test, test_labels, cv=10, scoring='accuracy')
-        k_scores.append(scores.mean())
-    return k_scores
-
-
-def plot_confusion(classifier, test_pts, test_labels):
-    classes = ['STANDING',
-               'SITTING',
-               'LAYING',
-               'WALKING',
-               'WALKING_DOWNSTAIRS',
-               'WALKING_UPSTAIRS']
-    pred_label = classifier.predict(test_pts)
-    # print(true_label)
-    result = cf(test_labels, pred_label, labels=classes)
-    res_nor = np.ndarray((6, 6), dtype=float)
-    for i in range(0, 6):
-        s = result[i].sum()
-        for j in range(0, 6):
-            res_nor[i][j] = float(result[i][j] / s)
-    print(result)
-    print(res_nor)
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(res_nor)
-    # plt.matshow(result)
-    fig.colorbar(cax)
-    ax.set_xticklabels([''] + classes)
-    ax.set_yticklabels([''] + classes)
-    plt.xlabel("Predicted Label")
-    plt.ylabel("True Label")
-    plt.legend(loc='best')
-    plt.show()
+from plot_confusion import plot_confusion
 
 
 # Partitioning data to input and target variable
@@ -81,38 +32,44 @@ train_pca = pca.fit_transform(train_pts, y=train_labels)
 test_pca = pca.transform(test_pts)
 # print(pca.explained_variance_ratio_)
 
-k_range = list(range(1, 31))
-k_scores = classify(train_pca, train_labels, test_pca, test_labels, "PCA")
-print(k_scores)
-plt.plot(k_range, k_scores)
-plt.xlabel('Value of K for KNN')
-plt.ylabel('KNN Accuracy')
-plt.show()
+
+# def classify(train, train_labels, test, test_labels, method):
+#     k_range = list(range(1, 31, 2))
+#     k_scores_train = []
+#     k_scores_test = []
+#     k_scores_cv_train = []
+#     for k in k_range:
+#         clf = KNeighborsClassifier(n_neighbors=k)
+#         clf.fit(train, train_labels)
+
+#         # scores_train = clf.score(train, train_labels)
+#         # k_scores_train.append(scores_train)
+
+#         # scores_test = clf.score(test, test_labels)
+#         # k_scores_test.append(scores_test)
+
+#         scores_cv_train = cross_val_score(clf, train, train_labels, cv=100, scoring='accuracy')
+#         k_scores_cv_train.append(scores_cv_train.mean())
+
+#     return k_scores_cv_train
 
 
-# Train Using Random Forest with 20 Trees
+k_scores_test = [0.79877841873091282, 0.80692229385816083, 0.80963691890057687, 0.80726162198846285, 0.80726162198846285, 0.81099423142178484, 0.81167288768238888, 0.81506616898540885, 0.81303020020359684, 0.81506616898540885, 0.81438751272480492, 0.81642348150661692, 0.81336952833389886, 0.81438751272480492, 0.8120122158126909]
 
-# rf = RandomForestClassifier(20)
-# rf.fit(x_train, y_train)
+k_scores_train = [1.0, 0.99632752992383022, 0.98898258977149078, 0.98394994559303595, 0.97946137105549513, 0.97701305767138191, 0.97361262241566926, 0.97102829162132753, 0.96721980413492925, 0.96354733405875947, 0.96300326441784545, 0.96150707290533188, 0.96069096844396085, 0.9575625680087051, 0.95620239390642003]
 
-# y_pred = rf.predict(x_test)
+# k_scores_cv_train = classify(train_pca, train_labels, test_pca, test_labels, method)
 
-# cf(np.argmax(y_test.as_matrix(), axis=1), np.argmax(y_pred, axis=1))
+clf = KNeighborsClassifier(n_neighbors=10)
+clf.fit(train_pca, train_labels)
+plot_confusion(clf, test_pca, test_labels)
 
-# print rf.score(x_test, y_test)
 
-# plt.matshow(cf(np.argmax(y_test.as_matrix(), axis=1), np.argmax(y_pred, axis=1)), cmap='Reds')
-# plt.colorbar()
-# plt.ylabel('True label')
-# plt.xlabel('Predicted label')
-# plt.show()
-
-# visualizing the data
-
-# groups = train_data.groupby('Activity')
-
-# for name, group in groups:
-#     plt.plot(group['tBodyAcc-mean()-Y'], group['tBodyAccMag-mean()'], '.', label=name)
-
+# plt.plot(k_range, k_scores_train, label="Train Accuracy")
+# plt.plot(k_range, k_scores_test, label="Test Accuracy")
+# plt.plot(k_range, k_scores_cv_train, label="Cross validation Accuracy")
+# plt.xlabel("Value of K for KNN")
+# plt.ylabel("KNN Accuracy")
+# plt.title("Accuracy V/S no of neighbors")
 # plt.legend(loc='best')
 # plt.show()
