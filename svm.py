@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.decomposition import PCA
 from sklearn import datasets
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix as cf
 from sklearn import svm
 from sklearn.metrics.pairwise import laplacian_kernel
@@ -17,32 +18,33 @@ def classify(train, train_labels, test, test_labels, method):
     test - Test data
     """
     clf = svm.SVC(kernel='linear')
-    clf.fit(train,train_labels)
-    print("Accuracy in ", method, " = ", clf.score(test,test_labels))
+    clf.fit(train, train_labels)
+    print("Accuracy in ", method, " = ", clf.score(test, test_labels))
     # print(clf.coef_)
     return clf
 
+
 def plot_confusion(classifier, test_pts, test_labels):
     classes = ['STANDING',
-    'SITTING',
-    'LAYING',
-    'WALKING',
-    'WALKING_DOWNSTAIRS',
-    'WALKING_UPSTAIRS']
+               'SITTING',
+               'LAYING',
+               'WALKING',
+               'WALKING_DOWNSTAIRS',
+               'WALKING_UPSTAIRS']
     pred_label = classifier.predict(test_pts)
-    #print(true_label)
+    # print(true_label)
     result = cf(test_labels, pred_label, labels=classes)
-    res_nor = np.ndarray((6,6),dtype=float)
-    for i in range(0,6):
+    res_nor = np.ndarray((6, 6), dtype=float)
+    for i in range(0, 6):
         s = result[i].sum()
-        for j in range(0,6):
-            res_nor[i][j] = float(result[i][j]/s)
+        for j in range(0, 6):
+            res_nor[i][j] = float(result[i][j] / s)
     print(result)
     print(res_nor)
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cax = ax.matshow(res_nor)
-    #plt.matshow(result)
+    # plt.matshow(result)
     fig.colorbar(cax)
     ax.set_xticklabels([''] + classes)
     ax.set_yticklabels([''] + classes)
@@ -50,6 +52,7 @@ def plot_confusion(classifier, test_pts, test_labels):
     plt.ylabel("True Label")
     plt.legend(loc='best')
     plt.show()
+
 
 train_data = pd.read_csv('datasets/train.csv')
 test_data = pd.read_csv('datasets/test.csv')
@@ -63,11 +66,16 @@ test_labels = test_data['Activity']
 
 # Classifying and plotting after applying PCA
 pca = PCA(n_components=200)
-train_pca = pca.fit_transform(train_pts,y=train_labels)
+train_pca = pca.fit_transform(train_pts, y=train_labels)
 print(pca.explained_variance_ratio_.sum())
 test_pca = pca.transform(test_pts)
-clf = classify(train_pts, train_labels, test_pts, test_labels, "KPCA(RBF)")
-plot_confusion(clf, test_pts, test_labels)
+clf = classify(train_pca, train_labels, test_pca, test_labels, "KPCA(RBF)")
+y_pred = clf.predict(test_pca)
+target_names = ['STANDING', 'SITTING', 'LAYING', 'WALKING', 'WALKING_DOWNSTAIRS',
+                'WALKING_UPSTAIRS']
+
+print(classification_report(test_labels, y_pred, target_names=target_names))
+# plot_confusion(clf, test_pts, test_labels)
 
 # Plotting PCA components vs accuracy graph
 # accuTrain = []
