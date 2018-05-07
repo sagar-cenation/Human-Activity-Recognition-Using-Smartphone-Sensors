@@ -12,12 +12,14 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-from plot_confusion import plot_confusion
 
 
 # Partitioning data to input and target variable
-train_data = pd.read_csv('datasets/train.csv')
-test_data = pd.read_csv('datasets/test.csv')
+train_data = pd.read_csv('newdatasets/train.csv')
+test_data = pd.read_csv('newdatasets/test.csv')
+
+train_data.dropna(inplace=True)
+test_data.dropna(inplace=True)
 
 train_pts = train_data.drop('Activity', axis=1)
 train_labels = train_data['Activity']
@@ -38,7 +40,40 @@ train_pca = pca.fit_transform(train_pts, y=train_labels)
 test_pca = pca.transform(test_pts)
 # print(pca.explained_variance_ratio_)
 
-
+def plot_confusion(classifier, test_pts, test_labels):
+    classes = ['STANDING',
+               'SITTING',
+               'LYING',
+               'WALKING',
+               'WALKING_DOWNSTAIRS',
+               'WALKING_UPSTAIRS']
+    cl = ['STANDING',
+               'SITTING',
+               'LYING',
+               'WALK',
+               'WALK_DOWN',
+               'WALK_UP']
+    pred_label = classifier.predict(test_pts)
+    # print(true_label)
+    result = cf(test_labels, pred_label, labels=classes)
+    res_nor = np.ndarray((6, 6), dtype=float)
+    # for i in range(0, 6):
+    #     s = result[i].sum()
+    #     for j in range(0, 6):
+    #         res_nor[i][j] = float(result[i][j] / s)
+    print(result)
+    # print(res_nor)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(result)
+    # plt.matshow(result)
+    fig.colorbar(cax)
+    ax.set_xticklabels([''] + cl)
+    ax.set_yticklabels([''] + cl)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.legend(loc='best')
+    plt.show()
 # def classify(train, train_labels, test, test_labels, method):
 #     k_range = list(range(1, 31, 2))
 #     k_scores_train = []
@@ -67,23 +102,25 @@ test_pca = pca.transform(test_pts)
 # k_scores_cv_train = classify(train_pca, train_labels, test_pca, test_labels, method)
 
 clf = KNeighborsClassifier(n_neighbors=10)
+
+
+clf.fit(train_pts, train_labels)
+print "Test Data Accuracy :"
+print clf.score(test_pts, test_labels)
+
 clf.fit(train_pca, train_labels)
-print 1 - clf.score(test_pca, test_labels)
-
-clf.fit(train_data, train_labels)
-print 1 - clf.score(test_data, test_labels)
-
-
+print "PCA Accurcy :"
+print clf.score(test_pca, test_labels)
 # plot confusion matrix
 
-# plot_confusion(clf, test_pca, test_labels)
+plot_confusion(clf, test_pca, test_labels)
 
 # classification report
-# y_pred = clf.predict(test_pca)
-# target_names = ['STANDING', 'SITTING', 'LAYING', 'WALKING', 'WALKING_DOWNSTAIRS',
-#                 'WALKING_UPSTAIRS']
+y_pred = clf.predict(test_pca)
+target_names = ['STANDING', 'SITTING', 'LYING', 'WALKING', 'WALKING_DOWNSTAIRS',
+                'WALKING_UPSTAIRS']
 
-# print(classification_report(test_labels, y_pred, target_names=target_names))
+print(classification_report(test_labels, y_pred, target_names=target_names))
 
 # plt.plot(k_range, k_scores_train, label="Train Accuracy")
 # plt.plot(k_range, k_scores_test, label="Test Accuracy")

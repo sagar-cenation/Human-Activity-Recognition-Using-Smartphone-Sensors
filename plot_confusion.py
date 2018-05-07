@@ -11,14 +11,9 @@ def plot_confusion(classifier, test_pts, test_labels):
                'SITTING',
                'LAYING',
                'WALKING',
-               'WALKING_DOWNSTAIRS',
-               'WALKING_UPSTAIRS']
-    cl = ['STANDING',
-          'SITTING',
-          'LAYING',
-          'WALKING',
-          'WALK_DOWN',
-          'WALK_UP']
+               'WALKING_DOWN',
+               'WALKING_UP']
+    
     pred_label = classifier.predict(test_pts)
     # print(true_label)
     result = cf(test_labels, pred_label, labels=classes)
