@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 
 import matplotlib.pyplot as plt
 
@@ -19,7 +20,9 @@ def classify(train, train_labels, test, test_labels, method):
     """
     clf = svm.SVC(kernel='linear')
     clf.fit(train, train_labels)
+    print("Predict start = ",time.clock())
     print("Accuracy in ", method, " = ", clf.score(test, test_labels))
+    print("Predict end = ",time.clock())
     # print(clf.coef_)
     return clf
 
@@ -54,28 +57,49 @@ def plot_confusion(classifier, test_pts, test_labels):
     plt.show()
 
 
-train_data = pd.read_csv('datasets/train.csv')
-test_data = pd.read_csv('datasets/test.csv')
+train_data = pd.read_csv('datasets/finaltrain.csv')
+test_data = pd.read_csv('datasets/finaltest.csv')
 
 train_pts = train_data.drop('Activity', axis=1)
+train_pts = train_pts.drop('subject', axis=1)
 train_labels = train_data['Activity']
 
 test_pts = test_data.drop('Activity', axis=1)
+test_pts = test_pts.drop('subject', axis=1)
 test_labels = test_data['Activity']
 
+# Random scaling the train and test data
+# x = 1
+# for i in train_pts.columns.values:
+#     train_pts.loc[:,i] *= x
+#     train_pts.loc[:,i] += (10-x)
+#     x = x+1
+#     if x == 10:
+#         x = 1
+# x = 1
+# for i in test_pts.columns.values:
+#     test_pts.loc[:,i] *= x
+#     test_pts.loc[:,i] += (10-x)
+#     x = x+1
+#     if x == 10:
+#         x = 1
 
 # Classifying and plotting after applying PCA
 pca = PCA(n_components=200)
 train_pca = pca.fit_transform(train_pts, y=train_labels)
-print(pca.explained_variance_ratio_.sum())
+# print(pca.explained_variance_ratio_.sum())
+print("Transform start = ",time.clock())
 test_pca = pca.transform(test_pts)
-clf = classify(train_pca, train_labels, test_pca, test_labels, "KPCA(RBF)")
-y_pred = clf.predict(test_pca)
-target_names = ['STANDING', 'SITTING', 'LAYING', 'WALKING', 'WALKING_DOWNSTAIRS',
-                'WALKING_UPSTAIRS']
+print("Transform end = ",time.clock())
+clf = classify(train_data, train_labels, test_data, test_labels, "PCA(RBF)")
+# y_pred = clf.predict(test_pca)
+# target_names = ['STANDING', 'SITTING', 'LAYING', 'WALKING', 'WALKING_DOWNSTAIRS',
+#                 'WALKING_UPSTAIRS']
+# result = cf(test_labels, y_pred, labels=target_names)
 
-print(classification_report(test_labels, y_pred, target_names=target_names))
-# plot_confusion(clf, test_pts, test_labels)
+# print(classification_report(y_pred, test_labels, target_names=target_names))
+# print(result)
+# plot_confusion(clf, test_pca, test_labels)
 
 # Plotting PCA components vs accuracy graph
 # accuTrain = []

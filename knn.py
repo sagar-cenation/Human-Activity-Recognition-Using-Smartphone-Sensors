@@ -16,8 +16,8 @@ from plot_confusion import plot_confusion
 
 
 # Partitioning data to input and target variable
-train_data = pd.read_csv('datasets/train.csv')
-test_data = pd.read_csv('datasets/test.csv')
+train_data = pd.read_csv('datasets/newtrain.csv')
+test_data = pd.read_csv('datasets/newtest.csv')
 
 train_pts = train_data.drop('Activity', axis=1)
 train_labels = train_data['Activity']
@@ -65,13 +65,43 @@ test_pca = pca.transform(test_pts)
 # k_scores_train = [1.0, 0.99632752992383022, 0.98898258977149078, 0.98394994559303595, 0.97946137105549513, 0.97701305767138191, 0.97361262241566926, 0.97102829162132753, 0.96721980413492925, 0.96354733405875947, 0.96300326441784545, 0.96150707290533188, 0.96069096844396085, 0.9575625680087051, 0.95620239390642003]
 
 # k_scores_cv_train = classify(train_pca, train_labels, test_pca, test_labels, method)
+def plot_confusion(classifier, test_pts, test_labels):
+    classes = ['STANDING',
+               'SITTING',
+               'LAYING',
+               'WALKING',
+               'WALKING_DOWNSTAIRS',
+               'WALKING_UPSTAIRS']
+    pred_label = classifier.predict(test_pts)
+    # print(true_label)
+    result = cf(test_labels, pred_label, labels=classes)
+    res_nor = np.ndarray((6, 6), dtype=float)
+    for i in range(0, 6):
+        s = result[i].sum()
+        for j in range(0, 6):
+            res_nor[i][j] = float(result[i][j] / s)
+    print(result)
+    print(res_nor)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(res_nor)
+    # plt.matshow(result)
+    fig.colorbar(cax)
+    ax.set_xticklabels([''] + classes)
+    ax.set_yticklabels([''] + classes)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.legend(loc='best')
+    plt.show()
 
-clf = KNeighborsClassifier(n_neighbors=10)
+clf = KNeighborsClassifier(n_neighbors=11)
 clf.fit(train_pca, train_labels)
-print 1 - clf.score(test_pca, test_labels)
+print(1-clf.score(test_pca, test_labels))
 
-clf.fit(train_data, train_labels)
-print 1 - clf.score(test_data, test_labels)
+plot_confusion(clf,test_pca,test_labels)
+
+# clf.fit(train_data, train_labels)
+# print(1 - clf.score(test_data, test_labels))
 
 
 # plot confusion matrix
