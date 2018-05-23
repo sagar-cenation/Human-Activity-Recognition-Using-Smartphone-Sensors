@@ -105,12 +105,12 @@ clf = KNeighborsClassifier(n_neighbors=10)
 
 
 clf.fit(train_pts, train_labels)
-print "Test Data Accuracy :"
-print clf.score(test_pts, test_labels)
+print("Test Data Accuracy :")
+print(clf.score(test_pts, test_labels))
 
 clf.fit(train_pca, train_labels)
-print "PCA Accurcy :"
-print clf.score(test_pca, test_labels)
+print("PCA Accurcy :")
+print(clf.score(test_pca, test_labels))
 # plot confusion matrix
 
 plot_confusion(clf, test_pca, test_labels)

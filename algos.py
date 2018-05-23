@@ -2,26 +2,29 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
+import pickle
 
 from sklearn.decomposition import PCA
 from sklearn import metrics
-from sklearn.metrics import classification_report
+# from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix as cf
 from sklearn.cross_validation import cross_val_score
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-train_data = pd.read_csv('newdatasets/train.csv')
-test_data = pd.read_csv('newdatasets/test.csv')
+train_data = pd.read_csv('datasets/train.csv')
+test_data = pd.read_csv('datasets/test.csv')
 
 train_data.dropna(inplace=True)
 test_data.dropna(inplace=True)
 
 train_pts = train_data.drop('Activity', axis=1)
+train_pts = train_pts.drop('subject', axis=1)
 train_labels = train_data['Activity']
 
 test_pts = test_data.drop('Activity', axis=1)
+test_pts = test_pts.drop('subject', axis=1)
 test_labels = test_data['Activity']
 
 
@@ -57,13 +60,13 @@ print(pca.explained_variance_ratio_.sum())
 def plot_confusion(classifier, test_pts, test_labels):
     classes = ['STANDING',
                'SITTING',
-               'LYING',
+               'LAYING',
                'WALKING',
                'WALKING_DOWNSTAIRS',
                'WALKING_UPSTAIRS']
     cl = ['STANDING',
                'SITTING',
-               'LYING',
+               'LAYING',
                'WALK',
                'WALK_DOWN',
                'WALK_UP']
@@ -89,9 +92,10 @@ def plot_confusion(classifier, test_pts, test_labels):
     plt.legend(loc='best')
     plt.show()
 
-rf = RandomForestClassifier(n_estimators=200, n_jobs=4, min_samples_leaf=10)  # 0.90566677977604348
+rf = RandomForestClassifier(n_estimators=900, n_jobs=8, max_features=23)  # 0.90566677977604348
 rf.fit(train_pca, train_labels)
-print rf.score(test_pca, test_labels)
+print("Features: ",rf.n_features_)
+print("Train fit: ",rf.score(train_pca, train_labels))
 plot_confusion(rf, test_pca, test_labels)
 
 # plotting accuracy graphs
@@ -107,14 +111,18 @@ plot_confusion(rf, test_pca, test_labels)
 
 
 # precision vs recall
-rf = RandomForestClassifier(n_estimators=200, n_jobs=4, min_samples_leaf=10)  # 0.90566677977604348
-rf.fit(train_pca, train_labels)
+# rf = RandomForestClassifier(n_estimators=200, n_jobs=4, min_samples_leaf=10)  # 0.90566677977604348
+# rf.fit(train_pca, train_labels)
 y_pred = rf.predict(test_pca)
-print rf.score(test_pca, test_labels)
+print(rf.score(test_pca, test_labels))
 
 # print y_pred
 # print test_pca
-target_names = ['STANDING', 'SITTING', 'LYING', 'WALKING', 'WALKING_DOWNSTAIRS',
+target_names = ['STANDING', 'SITTING', 'LAYING', 'WALKING', 'WALKING_DOWNSTAIRS',
                 'WALKING_UPSTAIRS']
 
-print(classification_report(test_labels, y_pred, target_names=target_names))
+# print(classification_report(test_labels, y_pred, target_names=target_names))
+# pca_dump = open("PCA2.pickle","wb")
+# pickle.dump(pca,pca_dump)
+# clf_dump = open("randomForest2.pickle","wb")
+# pickle.dump(rf,clf_dump)

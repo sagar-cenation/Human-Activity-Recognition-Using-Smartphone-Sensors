@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 import matplotlib.pyplot as plt
 
@@ -17,7 +18,10 @@ def classify(train, train_labels, test, test_labels, method):
     train_labels - Labels corresponding to training data points
     test - Test data
     """
-    clf = svm.SVC(kernel='linear')
+    clf = svm.SVC(kernel='sigmoid',verbose=True,gamma=1e-5)
+    # RBF: ,tol=1e-9,gamma=1e-9
+    # clf_pick = open("classifier.pickle","rb")
+    # clf = pickle.load(clf_pick)
     clf.fit(train, train_labels)
     print("Accuracy in ", method, " = ", clf.score(test, test_labels))
     # print(clf.coef_)
@@ -27,13 +31,13 @@ def classify(train, train_labels, test, test_labels, method):
 def plot_confusion(classifier, test_pts, test_labels):
     classes = ['STANDING',
                'SITTING',
-               'LYING',
+               'LAYING',
                'WALKING',
                'WALKING_DOWNSTAIRS',
                'WALKING_UPSTAIRS']
     cl = ['STANDING',
                'SITTING',
-               'LYING',
+               'LAYING',
                'WALK',
                'WALK_DOWN',
                'WALK_UP']
@@ -60,33 +64,44 @@ def plot_confusion(classifier, test_pts, test_labels):
     plt.show()
 
 
-train_data = pd.read_csv('newdatasets/Train.csv')
-test_data = pd.read_csv('newdatasets/Test.csv')
+train_data = pd.read_csv('newdatasets/train.csv')
+test_data = pd.read_csv('newdatasets/test.csv')
 
 train_data.dropna(inplace=True)
-test_data.dropna(inplace=True)
+# test_data.dropna(inplace=True)
 
 train_pts = train_data.drop('Activity', axis=1)
+train_pts = train_pts.drop('subject', axis=1)
 train_labels = train_data['Activity']
 
 test_pts = test_data.drop('Activity', axis=1)
+test_pts = test_pts.drop('subject', axis=1)
 test_labels = test_data['Activity']
 
 
 # Classifying and plotting after applying PCA
+# pca_pick = open("PCA.pickle","rb")
+# pca = pickle.load(pca_pick)
 pca = PCA(n_components=200)
 train_pca = pca.fit_transform(train_pts, y=train_labels)
+# train_pca = pca.transform(train_pts)
 print(pca.explained_variance_ratio_.sum())
 test_pca = pca.transform(test_pts)
 clf = classify(train_pca, train_labels, test_pca, test_labels, "PCA(RBF)")
 
+# clf_dump = open("SVM.pickle","wb")
+# pca_dump = open("PCAx.pickle","wb")
+# pickle.dump(pca,pca_dump)
+# pickle.dump(clf,clf_dump)
+# pca_dump.close()
+# clf_dump.close()
 
 # y_pred = clf.predict(test_pca)
 # target_names = ['STANDING', 'SITTING', 'LYING', 'WALKING', 'WALKING_DOWNSTAIRS',
 #                 'WALKING_UPSTAIRS']
 
 # print(classification_report(test_labels, y_pred, target_names=target_names))
-# plot_confusion(clf, test_pca, test_labels)
+plot_confusion(clf, test_pca, test_labels)
 
 # Plotting PCA components vs accuracy graph
 # accuTrain = []
